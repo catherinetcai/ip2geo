@@ -16,10 +16,16 @@ import (
 var KeyCDNCmd = &cobra.Command{
 	Use:   "keycdn",
 	Short: "Pass in a hostname or IP and get back the location",
-	Run:   getLocation,
+	Run:   getKeyCDN,
 }
 
-func getLocation(cmd *cobra.Command, args []string) {
+var IPAPICmd = &cobra.Command{
+	Use:   "ipapi",
+	Short: "Pass in a hostname or IP and get back the location",
+	Run:   getIPAPI,
+}
+
+func getKeyCDN(cmd *cobra.Command, args []string) {
 	client := &http.Client{}
 	if len(args) < 1 {
 		log.Fatal(errors.New("Pass in an IP or hostname you doofus"))
@@ -40,4 +46,27 @@ func getLocation(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 	spew.Dump(kresp)
+}
+
+func getIPAPI(cmd *cobra.Command, args []string) {
+	client := &http.Client{}
+	if len(args) < 1 {
+		log.Fatal(errors.New("Pass in an IP or hostname you doofus"))
+	}
+	request, err := http.NewRequest("GET", fmt.Sprintf("http://ip-api.com/json/%s", args[0]), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	ipresp := &geo.IPAPIResponse{}
+	err = json.Unmarshal(body, ipresp)
+	if err != nil {
+		log.Fatal(err)
+	}
+	spew.Dump(ipresp)
 }
