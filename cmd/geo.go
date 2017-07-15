@@ -10,6 +10,7 @@ import (
 
 	"github.com/catherinetcai/ip2geo/geo"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/nranchev/go-libGeoIP"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,12 @@ var IPAPICmd = &cobra.Command{
 	Use:   "ipapi",
 	Short: "Pass in a hostname or IP and get back the location",
 	Run:   getIPAPI,
+}
+
+var GeoIPCmd = &cobra.Command{
+	Use:   "geoip",
+	Short: "Pass in a IP and get back the location",
+	Run:   getGeoIP,
 }
 
 func getKeyCDN(cmd *cobra.Command, args []string) {
@@ -69,4 +76,18 @@ func getIPAPI(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 	spew.Dump(ipresp)
+}
+
+func getGeoIP(cmd *cobra.Command, args []string) {
+	if len(args) < 1 {
+		log.Fatal(errors.New("Could you like pass an IP or a hostname or something? Yeah that would be fantastic."))
+	}
+	file := "GeoLiteCity.dat"
+	gi, err := libgeo.Load(file)
+	if err != nil {
+		fmt.Printf("I don't know what this is.")
+	}
+	if gi != nil {
+		spew.Dump(gi.GetLocationByIP(args[0]))
+	}
 }
